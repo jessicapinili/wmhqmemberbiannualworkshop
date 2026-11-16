@@ -19,6 +19,7 @@
 <meta name="twitter:title" content="WMHQ Bi-Annual Workshop">
 <meta name="twitter:image" content="wmhq-replays-share.jpg">
 
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -725,6 +726,12 @@ h1 em{font-style:normal;color:#F2C6D0}
 @keyframes sparkUp{0%{transform:translateY(0) rotate(0) scale(.8);opacity:0}15%{opacity:.85}100%{transform:translateY(-110vh) rotate(540deg) scale(1.2);opacity:0}}
 .spark.emo{background:none!important;border-radius:0;width:auto;height:auto;font-style:normal;line-height:1;animation-name:emoUp}
 @keyframes emoUp{0%{transform:translateY(0) rotate(-10deg) scale(.8);opacity:0}15%{opacity:.35}85%{opacity:.3}100%{transform:translateY(-115vh) rotate(25deg) scale(1.1);opacity:0}}
+.jpt-ov{overflow:hidden}
+.jpt-ov.shaking .ov-num{animation-name:shake!important;animation-iteration-count:infinite!important;animation-timing-function:linear!important}
+.notes{position:absolute;inset:0;pointer-events:none}
+.note{position:absolute;font-family:'Caveat',cursive;font-size:clamp(26px,3vw,44px);color:#F2C6D0;opacity:.09;white-space:nowrap;clip-path:inset(0 100% 0 0);animation:write 22s ease-in-out infinite}
+@keyframes write{0%{clip-path:inset(0 100% 0 0)}12%{clip-path:inset(0 0 0 0)}80%{clip-path:inset(0 0 0 0);opacity:.09}92%,100%{clip-path:inset(0 0 0 0);opacity:0}}
+.jpt-ov .ov-lbl,.jpt-ov .ov-num,.jpt-ov .ov-c{position:relative}
 </style>
 </head>
 <body>
@@ -963,6 +970,12 @@ function paintT(){
   const lvl=!T.run?"":T.left<=0?"done":T.left<=10?"j3":T.left<=30?"j2":T.left<=60?"j1":"";
   document.querySelectorAll(".jpt,.jpt-ov").forEach(el=>{el.classList.remove("j1","j2","j3","done");if(lvl)el.classList.add(lvl);});
   if(T.left<=0&&!T.run)document.querySelectorAll(".jpt,.jpt-ov").forEach(el=>el.classList.add("done"));
+  const big2=document.getElementById("jptBig");
+  if(big2){const ovv=document.getElementById("jptOv");ovv.classList.remove("j1","j2","j3");
+    if(T.run&&T.left>0){ovv.classList.add("shaking");const k=Math.pow(1-T.left/Math.max(T.set,1),2.2);
+      big2.style.setProperty("--a",(0.6+k*14).toFixed(2));big2.style.setProperty("--r",(0.3+k*7).toFixed(2));big2.style.animationDuration=(0.9-k*0.78).toFixed(2)+"s";
+      big2.style.color=T.left<=10?"#ff5a6e":T.left<=60?"#F2A0B4":"#fff";}
+    else{ovv.classList.remove("shaking");big2.style.animationDuration="";big2.style.color=T.left<=0?"#FBE7A1":"";}}
 }
 function tick(){T.left-=1;if(T.left<=0){T.left=0;T.run=false;clearInterval(T.iv);musicStop(true);chime();}paintT();}
 function startStop(){
@@ -975,7 +988,7 @@ function resetT(){T.run=false;clearInterval(T.iv);musicStop(true);T.left=T.set;d
 function openBig(){
   let ov=document.getElementById("jptOv");
   if(!ov){ov=document.createElement("div");ov.id="jptOv";ov.className="jpt-ov";
-    ov.innerHTML=`<span class="ov-lbl">JP Timer</span><div class="ov-num" id="jptBig"></div><div class="jpt-ctrls ov-c"><button class="jpt-go" id="ovGo">Start</button><button class="jpt-rs" id="ovRs">Reset</button><button class="jpt-rs" id="ovX">Close</button></div>`;
+    ov.innerHTML=`<div class="notes" aria-hidden="true">${["what actually worked?", "review the numbers", "find the real bottleneck", "who is my buyer right now", "one lead priority", "cut what drains me", "keep the small promises", "clarity before volume", "map the next six months", "less tabs, more focus", "where are leads dropping off?", "trust the plan"].map((t,i)=>`<span class="note" style="top:${6+i*7.6}%;left:${(i*37)%55+4}%;animation-delay:${i*1.7}s;transform:rotate(${(i%3-1)*3}deg)">${t}</span>`).join("")}</div><span class="ov-lbl">WMHQ JP Timer</span><div class="ov-num" id="jptBig"></div><div class="jpt-ctrls ov-c"><button class="jpt-go" id="ovGo">Start</button><button class="jpt-rs" id="ovRs">Reset</button><button class="jpt-rs" id="ovX">Close</button></div>`;
     document.body.appendChild(ov);
     ov.querySelector("#ovGo").onclick=startStop;ov.querySelector("#ovRs").onclick=resetT;ov.querySelector("#ovX").onclick=()=>{ov.remove();if(document.fullscreenElement)document.exitFullscreen();};}
   if(ov.requestFullscreen)ov.requestFullscreen().catch(()=>{});
