@@ -1184,10 +1184,9 @@ document.getElementById("welOpen").onclick=()=>{
   </div>`;
   document.body.appendChild(ov);
   /* Welcome music: plays when the screen opens, fades out when it closes */
-  const wa=new Audio(WELCOME_AUDIO);wa.loop=true;wa.volume=0;
+  const wa=new Audio(WELCOME_AUDIO);wa.loop=true;wa.volume=0.5;wa.preload="auto";
   {const pr=wa.play();if(pr&&pr.catch)pr.catch(()=>{});}
   const fade=(to,ms,done)=>{const st=wa.volume,t0=performance.now();(function step(t){const k=Math.min(1,(t-t0)/ms);wa.volume=st+(to-st)*k;if(k<1)requestAnimationFrame(step);else if(done)done();})(t0);};
-  fade(0.5,1500);
   const close=()=>{fade(0,800,()=>wa.pause());ov.remove();document.removeEventListener("keydown",esc);if(document.fullscreenElement)document.exitFullscreen();};
   const esc=e=>{if(e.key==="Escape")close();};document.addEventListener("keydown",esc);
   ov.querySelector(".vis-x").onclick=close; if(ov.requestFullscreen)ov.requestFullscreen().catch(()=>{});
