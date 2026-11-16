@@ -732,6 +732,14 @@ h1 em{font-style:normal;color:#F2C6D0}
 .note{position:absolute;font-family:'Caveat',cursive;font-size:clamp(26px,3vw,44px);color:#F2C6D0;opacity:.09;white-space:nowrap;clip-path:inset(0 100% 0 0);animation:write 22s ease-in-out infinite}
 @keyframes write{0%{clip-path:inset(0 100% 0 0)}12%{clip-path:inset(0 0 0 0)}80%{clip-path:inset(0 0 0 0);opacity:.09}92%,100%{clip-path:inset(0 0 0 0);opacity:0}}
 .jpt-ov .ov-lbl,.jpt-ov .ov-num,.jpt-ov .ov-c{position:relative}
+.qfull{position:absolute;top:18px;right:62px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.8);border:1px solid var(--pd);border-radius:100px;padding:8px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);cursor:pointer;box-shadow:0 6px 16px rgba(36,7,9,.1)}
+.qfull:hover{background:#fff}
+.q-ov{position:fixed;inset:0;z-index:400;background:rgba(36,7,9,.55);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:4vh 4vw;overflow:auto}
+.q-big{width:min(1300px,100%);margin:auto;padding:5vh 4vw!important}
+.q-big h3{font-size:clamp(36px,4vw,60px)!important}
+.q-big .qgroup li{font-size:clamp(18px,1.6vw,24px)}
+.q-big .tpts li{font-size:clamp(17px,1.4vw,22px)}
+@media(max-width:700px){.qfull{position:static;margin-bottom:12px}}
 </style>
 </head>
 <body>
@@ -1010,12 +1018,24 @@ function wireTimer(){
   paintT();
 }
 
+function qFull(el){
+  const ov=document.createElement("div");ov.className="q-ov";
+  const card=el.cloneNode(true);card.removeAttribute("id");card.hidden=false;card.classList.add("q-big");
+  card.querySelectorAll(".qfull").forEach(b=>b.remove());
+  card.querySelector(".qx").onclick=()=>close();
+  ov.appendChild(card);document.body.appendChild(ov);
+  const close=()=>{ov.remove();document.removeEventListener("keydown",esc);if(document.fullscreenElement)document.exitFullscreen();};
+  const esc=e=>{if(e.key==="Escape")close();};document.addEventListener("keydown",esc);
+  ov.onclick=e=>{if(e.target===ov)close();};
+  if(ov.requestFullscreen)ov.requestFullscreen().catch(()=>{});
+}
 function openPhase(k){
   const ph=phases.find(x=>x.k===k), q=phaseQs[k], el=document.getElementById("qPanel");
   document.querySelectorAll(".phase").forEach(p=>p.classList.toggle("active",p.dataset.k===k));
   const list=(t,arr)=>`<div class="qgroup"><span class="qlbl">${t}</span><ul>${arr.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
   el.className="qpanel phase-panel "+k; el.hidden=false;
-  el.innerHTML=`<button class="qx" aria-label="Close">&times;</button><span class="qeyebrow">Review + Diagnose</span><h3>${ph.name}</h3><p class="qcheck"><b>We’re checking:</b> ${ph.check}</p><div class="qcols">${list("Review",q.review)}${list("Diagnose",q.diagnose)}</div><details class="tpts"><summary>${({influence:"Positioning & Messaging reminders",visibility:"Content & Marketing reminders",cash:"Sales Infrastructure reminders",subconscious:"Mindset Psychology reminders"})[k]}</summary><ul>${(talkPts[k]||[]).map(x=>`<li>${x}</li>`).join("")}</ul></details>`;
+  el.innerHTML=`<button class="qx" aria-label="Close">&times;</button><button class="qfull" aria-label="Open full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Full screen</button><span class="qeyebrow">Review + Diagnose</span><h3>${ph.name}</h3><p class="qcheck"><b>We’re checking:</b> ${ph.check}</p><div class="qcols">${list("Review",q.review)}${list("Diagnose",q.diagnose)}</div><details class="tpts"><summary>${({influence:"Positioning & Messaging reminders",visibility:"Content & Marketing reminders",cash:"Sales Infrastructure reminders",subconscious:"Mindset Psychology reminders"})[k]}</summary><ul>${(talkPts[k]||[]).map(x=>`<li>${x}</li>`).join("")}</ul></details>`;
+  el.querySelector(".qfull").onclick=()=>qFull(el);
   el.querySelector(".qx").onclick=()=>{el.hidden=true;document.querySelectorAll(".phase").forEach(p=>p.classList.remove("active"));};
   el.scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -1069,7 +1089,8 @@ function openPhase2(k){
   document.querySelectorAll(".phase").forEach(p=>p.classList.toggle("active",p.dataset.k===k));
   el.className="qpanel phase-panel "+k; el.hidden=false;
   const qs=q.length?`<div class="qgroup"><span class="qlbl">WMHQ Member Action</span><ul>${q.map(x=>`<li>${x}</li>`).join("")}</ul></div>`:`<div class="qgroup"><p class="ph">[Placeholder: questions for ${ph.name}]</p></div>`;
-  el.innerHTML=`<button class="qx" aria-label="Close">&times;</button><span class="qeyebrow">Decide + Build</span><h3>${ph.name}</h3>${ph.check?`<p class="qcheck"><b>We’re checking:</b> ${ph.check}</p>`:""}${qs}${(qGroups2[k]||[]).length?`<div class="qcols">${qGroups2[k].map(([t,arr])=>`<div class="qgroup"><span class="qlbl">${t}</span><ul>${arr.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>`:""}${talkPts2[k].length?`<details class="tpts"><summary>Key point</summary><ul>${talkPts2[k].map(x=>`<li>${x}</li>`).join("")}</ul></details>`:""}`;
+  el.innerHTML=`<button class="qx" aria-label="Close">&times;</button><button class="qfull" aria-label="Open full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Full screen</button><span class="qeyebrow">Decide + Build</span><h3>${ph.name}</h3>${ph.check?`<p class="qcheck"><b>We’re checking:</b> ${ph.check}</p>`:""}${qs}${(qGroups2[k]||[]).length?`<div class="qcols">${qGroups2[k].map(([t,arr])=>`<div class="qgroup"><span class="qlbl">${t}</span><ul>${arr.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join("")}</div>`:""}${talkPts2[k].length?`<details class="tpts"><summary>Key point</summary><ul>${talkPts2[k].map(x=>`<li>${x}</li>`).join("")}</ul></details>`:""}`;
+  el.querySelector(".qfull").onclick=()=>qFull(el);
   el.querySelector(".qx").onclick=()=>{el.hidden=true;document.querySelectorAll(".phase").forEach(p=>p.classList.remove("active"));};
   el.scrollIntoView({behavior:"smooth",block:"start"});
 }
